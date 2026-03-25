@@ -1,0 +1,57 @@
+What is the difference between @PathVariable and @RequestParam ?
+
+1. @PathVariable (Resource Identity)
+This extracts values directly from the URI path itself.
+
+URL Look: http://localhost:8080/orders/1
+Mapping: @GetMapping("/orders/{id}")
+When to use: Use this when you are specifically identifying a single, unique resource (like fetching Order ID 1). It is the core of RESTful design syntax.
+
+2. @RequestParam (Filtering & Modifiers)
+This extracts values from the Query String (everything that comes after the ? in a URL).
+
+URL Look: http://localhost:8080/orders?month=2023-10&sort=desc
+Mapping: @GetMapping("/orders")
+When to use: Use this when you are filtering a collection of resources, sorting, paginating, or providing optional flags. In our case, extracting the month to filter down the entire database of orders!
+In Summary: Use @PathVariable to answer "Which exact item?", and use @RequestParam to answer "How do you want this list filtered?".
+
+What is @RequestBody ?
+
+
+Lombok Annotations used in Bean class,
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor - Why these are added in Order Pojo class ? What is difference between @NotBlank and @NotNull
+
+The Lombok Annotations
+The first four annotations—@Data, @Builder, @NoArgsConstructor, and @AllArgsConstructor—are from the Project Lombok library. 
+They are designed to dramatically reduce "boilerplate" code that Java developers traditionally had to type by hand.
+
+By adding these annotations at the top of the Order POJO, Lombok automatically manipulates the compiled Java byte-code to inject the following for us:
+
+@Data: This is a powerful shortcut annotation. It automatically generates all the get() and set() methods for every field, alongside toString(), equals(), and hashCode() methods.
+
+@Builder: This generates the implementation for the "Builder Design Pattern" for the class. 
+It allows us to construct the object cleanly and logically in our code (e.g., Order.builder().customerName("Alice").build(); 
+instead of chaining endless .setCustomerName("Alice") statements).
+
+@NoArgsConstructor: This generates an empty, default constructor (public Order() {}). 
+This is absolutely required by Spring Boot.
+When Spring receives a JSON payload from a POST request, its internal JSON parser (Jackson) requires an empty constructor to create the object first before it assigns values to the fields!
+
+@AllArgsConstructor: Generates a constructor that accepts every single field at once. The @Builder annotation actually requires this to operate smoothly behind the scenes.
+
+
+
+@NotNull vs @NotBlank
+These two are part of the Jakarta Bean Validation specification, and choosing between them is incredibly important to secure your API endpoints:
+
+@NotNull: This simply checks that the object reference isn't literally null.
+
+Best for: Dates, Numbers, and Enums. If someone sends an empty JSON {} without an amount, @NotNull on the amount field will catch it.
+Warning: If you put @NotNull on a String, it will accept an empty string ("") or even whitespace ("   "), because a blank object is still technically "not a null pointer".
+
+@NotBlank: This handles the "blank text" loophole perfectly. It verifies that a String is not null, AND that its trimmed length is strictly greater than zero.
+Best for: Strings (like customerName). It prevents users from sending a JSON request with "customerName": "    ", catching it instantly!
+
